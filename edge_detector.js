@@ -16,6 +16,7 @@ uploadInput.addEventListener("change", (event) => {
 
   // Load the image file into the image object
   reader.onload = (e) => {
+    uploadInput.disabled = true;
     img.src = e.target.result;
     
     img.onload = () => {

@@ -1,7 +1,5 @@
 let CANVAS_WIDTH, CANVAS_HEIGHT;
-
-let data;
-let path;
+let initialTime;
 
 let initialStarPositions;
 let currentStars;
@@ -9,7 +7,8 @@ let currentStars;
 let starsToDraw;
 
 function setup() {
-    globalThis.starsForDrawing = 250;
+    initialTime = new Date();
+    globalThis.starsForDrawing = 500;
 
     const container = document.getElementById('canvas-container');
     CANVAS_WIDTH = container.offsetWidth;
@@ -21,32 +20,38 @@ function setup() {
     colorMode(HSB, 360, 100, 100, 100);
     
     starsToDraw = globalThis.starsForDrawing;
-    initialStars = generateStars(600, 1000, 255, 1.5); // minStars, maxStars, initialStroke, initialStrokeWeight
+    initialStars = generateStars(600, 1200, 255, 1.5); // minStars, maxStars, initialStroke, initialStrokeWeight
     // Stars are represented as [x, y, strokeWeight]
     currentStars = [...initialStars];
-
-    // path = Object.keys(data).map((key) => data[key]);
 }
 
-let starSpeed = 1; // units per second
-let step = 0;
-
-function easeOutBack(x) {
-    const c1 = 1.70158;
-    const c3 = c1 + 1;
-    
-    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
-}
+function easeInOutCubic(x) {
+    // Math as seen in https://easings.net/#easeInOutCubic
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
 
 function easingFunc(x) {
-    return x;
-    // return easeOutBack(x);
+    return easeInOutCubic(x);
 }
 
-function translateToCenter(x, y) {
+let starSpeed = 0.2; // units per second
+let starMoveStep = 0;
 
+let transparencySpeed = 7; // units per second
+let maxTransparency = 56;
+let constellationTransparency = 0;
+
+function resetStarrySky() {
+    console.log("Reset");
+    const uploadInput = document.getElementById("upload");
+    uploadInput.disabled = false;
+
+    globalThis.beginAnimation = false;
+    starMoveStep = 0;
+    constellationTransparency = 0;
+    initialStars = generateStars(600, 1200, 255, 1.5);
+    currentStars = [...initialStars];
 }
-
 
 function draw() {
     nightSkyStarlessBackground();
@@ -58,7 +63,9 @@ function draw() {
 
     const fullPath = globalThis.outputPath;
     const sliceStep = Math.round(fullPath.length / starsToDraw);
-    path = fullPath.filter((_, index) => index % sliceStep === 0);
+
+    const path = fullPath.filter((_, index) => index % sliceStep === 0);
+    const remainingPath = fullPath.filter((_, index) => index % sliceStep !== 0);
     
     const imageWidth = globalThis.uploadedImageWidth;
     const imageHeight = globalThis.uploadedImageHeight;
@@ -76,7 +83,7 @@ function draw() {
     const scaleX = scaledHeight / imageHeight;
     const scaleY = scaledWidth / imageWidth;
     
-    if (step <= 1) {
+    if (starMoveStep <= 1) {
         let speedInMS = starSpeed / 1000;
         let deltaStep = speedInMS * deltaTime;
 
@@ -92,28 +99,37 @@ function draw() {
             let targetY = (path[i][1] * scaleY) - scaledCenterY + canvasCenterY;
 
             currentStars[i] = [
-                lerp(initX, targetX, easingFunc(step)),
-                lerp(initY, targetY, easingFunc(step)),
+                lerp(initX, targetX, easingFunc(starMoveStep)),
+                lerp(initY, targetY, easingFunc(starMoveStep)),
                 initStroke,
                 initStrokeWeight
             ]
         }
 
-        step += deltaStep;
+        starMoveStep += deltaStep;
     } else {
-        for (const coordinate of fullPath) {
+        let transparencySpeedInMS = transparencySpeed / 1000;
+        let deltaTransparency = transparencySpeedInMS * deltaTime;
+
+        for (const coordinate of remainingPath) {
             const [x, y] = [...coordinate];
             let targetX = (x * scaleX) - scaledCenterX + canvasCenterX;
             let targetY = (y * scaleY) - scaledCenterY + canvasCenterY;
             
-            stroke(0, 0, 255, 15);
+            stroke(0, 0, 100, constellationTransparency);
             strokeWeight(0.6);
             point(targetX, targetY);
         }
 
-        step = 0;
-        globalThis.beginAnimation = false;
-        noLoop();
+        if (constellationTransparency <= maxTransparency) {     
+            constellationTransparency += deltaTransparency;
+            initialTime = new Date();
+        } else {
+            let currentTime = new Date();
+            if ((currentTime - initialTime) > 2500) {
+                resetStarrySky();
+            }
+        }
     }
 }
 
@@ -171,40 +187,5 @@ function drawStars(stars) {
         stroke(star[2]);
         strokeWeight(star[3]);
         point(star[0], star[1]);
-    }
-}
-
-function keyPressed() {
-    if (keyCode === ENTER) {
-        paths = Object.keys(data).map((key) => data[key]);
-
-        background(0); // Ensures no unwanted artifacts are left behind
-        clear();
-
-        // let gradientArray = [[255, 62, 26], [250, 41, 56]]; // color values are provided as HSB
-
-         let startX = 0;
-         let startY = 0;
-         let endX = CANVAS_WIDTH;
-         let endY = CANVAS_HEIGHT;
-
-         drawGradientBackground(gradientArray, startX, startY, endX, endY);
-        
-        // blendMode(BLEND);
-        // fill(0, 0, 0, 55);
-        // rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        nightSkyBackground();
-
-        // paths = [paths];
-        // applyMatrix(0.5, 0, 0, 0.5, 0, 0);
-
-        // console.log(paths);
-        // for (const path of paths) {
-        //     for (const coord of path) {
-        //         stroke(255);
-        //         strokeWeight(4);
-        //         point(...coord);
-        //     }
-        // }
     }
 }
