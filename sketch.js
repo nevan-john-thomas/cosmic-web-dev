@@ -183,12 +183,12 @@ function keyPressed() {
 
         // let gradientArray = [[255, 62, 26], [250, 41, 56]]; // color values are provided as HSB
 
-        // let startX = 0;
-        // let startY = 0;
-        // let endX = CANVAS_WIDTH;
-        // let endY = CANVAS_HEIGHT;
+         let startX = 0;
+         let startY = 0;
+         let endX = CANVAS_WIDTH;
+         let endY = CANVAS_HEIGHT;
 
-        // drawGradientBackground(gradientArray, startX, startY, endX, endY);
+         drawGradientBackground(gradientArray, startX, startY, endX, endY);
         
         // blendMode(BLEND);
         // fill(0, 0, 0, 55);
