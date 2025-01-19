@@ -7,7 +7,7 @@ let data;
 let paths;
 
 function preload() {
-    data = loadJSON("/assets/low_res_bojack.json");
+    data = loadJSON("./assets/low_res_bojack.json");
 }
 
 function setup() {
