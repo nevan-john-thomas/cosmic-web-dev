@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>p5.js in a Webpage</title>
+    <script src="https://www.marvinj.org/releases/marvinj-0.7.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,13 +18,22 @@
             padding: 0;
             margin: 0;
         }
+
+        #canvas {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h1>p5.js Canvas</h1>
-    <p>Webpage Contents here</p>
+    <h1>Test</h1>
+    <p>Select an image to process:</p>
+    <input type="file" id="upload" accept="image/*" />
+    <br />
     <div id="canvas-container"></div>
+    <canvas id="canvas"></canvas>
+
+    <script src="edge_detector.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-    <script src="sketch.js"></script>
+    <script defer src="sketch.js"></script>
 </body>
 </html>
